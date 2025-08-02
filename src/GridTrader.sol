@@ -36,4 +36,7 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
         return IERC20(asset()).balanceOf(address(this)) + asset2Value;
     }
 
+    function postInteraction(Order memory order, bytes memory extension, bytes32 orderHash, address taker, uint256 makingAmount, uint256 takingAmount, uint256 remainingMakingAmount, bytes memory extraData) external {
+
+    }
 }
