@@ -10,12 +10,7 @@ library ChainlinkOracleLib {
 
     function getPrice(address chainLinkFeed) public view returns (uint256 rate) {
         uint256 chainlinkDecimals = 10 ** AggregatorV3Interface(chainLinkFeed).decimals();
-        (
-            ,
-            int256 price,
-            ,
-            ,
-        ) = AggregatorV3Interface(chainLinkFeed).latestRoundData();
+        (, int256 price,,,) = AggregatorV3Interface(chainLinkFeed).latestRoundData();
         rate = price.toUint256() / chainlinkDecimals;
 
         return rate;
@@ -26,5 +21,4 @@ library ChainlinkOracleLib {
         uint256 numerator2 = 10 ** decimalsToken0;
         return Math.mulDiv(numerator1, numerator2, 1 << 192);
     }
- 
 }

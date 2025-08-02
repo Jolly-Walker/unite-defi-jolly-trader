@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
@@ -20,7 +19,7 @@ type MakerTraits is uint256;
  * 249 bit `HAS_EXTENSION_FLAG`             - if set, the order has extension(s)
  * 248 bit `USE_PERMIT2_FLAG`               - if set, the order uses permit2
  * 247 bit `UNWRAP_WETH_FLAG`               - if set, the order requires to unwrap WETH
-
+ *
  * Low 200 bits are used for allowed sender, expiration, nonceOrEpoch, and series
  * uint80 last 10 bytes of allowed sender address (0 if any)
  * uint40 expiration timestamp (0 if none)
@@ -83,7 +82,7 @@ library MakerTraitsLib {
      */
     function isExpired(MakerTraits makerTraits) internal view returns (bool) {
         uint256 expiration = getExpirationTime(makerTraits);
-        return expiration != 0 && expiration < block.timestamp;  // solhint-disable-line not-rely-on-time
+        return expiration != 0 && expiration < block.timestamp; // solhint-disable-line not-rely-on-time
     }
 
     /**
@@ -105,11 +104,11 @@ library MakerTraitsLib {
     }
 
     /**
-      * @notice Determines if the order allows partial fills.
-      * @dev If the _NO_PARTIAL_FILLS_FLAG is not set in the makerTraits, then the order allows partial fills.
-      * @param makerTraits The traits of the maker, determining their preferences for the order.
-      * @return result A boolean indicating whether the maker allows partial fills.
-      */
+     * @notice Determines if the order allows partial fills.
+     * @dev If the _NO_PARTIAL_FILLS_FLAG is not set in the makerTraits, then the order allows partial fills.
+     * @param makerTraits The traits of the maker, determining their preferences for the order.
+     * @return result A boolean indicating whether the maker allows partial fills.
+     */
     function allowPartialFills(MakerTraits makerTraits) internal pure returns (bool) {
         return (MakerTraits.unwrap(makerTraits) & _NO_PARTIAL_FILLS_FLAG) == 0;
     }
@@ -133,22 +132,22 @@ library MakerTraitsLib {
     }
 
     /**
-      * @notice Determines if the order allows multiple fills.
-      * @dev If the _ALLOW_MULTIPLE_FILLS_FLAG is set in the makerTraits, then the maker allows multiple fills.
-      * @param makerTraits The traits of the maker, determining their preferences for the order.
-      * @return result A boolean indicating whether the maker allows multiple fills.
-      */
+     * @notice Determines if the order allows multiple fills.
+     * @dev If the _ALLOW_MULTIPLE_FILLS_FLAG is set in the makerTraits, then the maker allows multiple fills.
+     * @param makerTraits The traits of the maker, determining their preferences for the order.
+     * @return result A boolean indicating whether the maker allows multiple fills.
+     */
     function allowMultipleFills(MakerTraits makerTraits) internal pure returns (bool) {
         return (MakerTraits.unwrap(makerTraits) & _ALLOW_MULTIPLE_FILLS_FLAG) != 0;
     }
 
     /**
-      * @notice Determines if an order should use the bit invalidator or remaining amount validator.
-      * @dev The bit invalidator can be used if the order does not allow partial or multiple fills.
-      * @param makerTraits The traits of the maker, determining their preferences for the order.
-      * @return result A boolean indicating whether the bit invalidator should be used.
-      * True if the order requires the use of the bit invalidator.
-      */
+     * @notice Determines if an order should use the bit invalidator or remaining amount validator.
+     * @dev The bit invalidator can be used if the order does not allow partial or multiple fills.
+     * @param makerTraits The traits of the maker, determining their preferences for the order.
+     * @return result A boolean indicating whether the bit invalidator should be used.
+     * True if the order requires the use of the bit invalidator.
+     */
     function useBitInvalidator(MakerTraits makerTraits) internal pure returns (bool) {
         return !allowPartialFills(makerTraits) || !allowMultipleFills(makerTraits);
     }

@@ -11,14 +11,13 @@ import {ChainlinkOracleLib} from "./Library/ChainlinkOracleLib.sol";
 import {IGridTrader} from "./Interfaces/IGridTrader.sol";
 
 contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
-
     using SafeERC20 for IERC20;
     using Math for uint256;
 
     IERC20 public asset2;
     address public chainlinkAddress; // price feed address for asset/asset2 pair
     address public oneInchLOP;
-    
+
     GridLine[] public buyTargets;
     GridLine[] public sellTargets;
 
@@ -28,7 +27,11 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
     // index of grid to trade
     uint256 public sellGrid;
 
-    constructor(IERC20 asset, IERC20 _asset2, address _chainLinkAddress, address _oneInchLOP) Ownable(msg.sender) ERC20("Name", "Sym") ERC4626(asset) {
+    constructor(IERC20 asset, IERC20 _asset2, address _chainLinkAddress, address _oneInchLOP)
+        Ownable(msg.sender)
+        ERC20("Name", "Sym")
+        ERC4626(asset)
+    {
         asset2 = _asset2;
         chainlinkAddress = _chainLinkAddress;
         oneInchLOP = _oneInchLOP;
@@ -56,9 +59,16 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
 
     // if its a buy order, increment buy grid, reset sell grid
     // if its a sell order, increment sell grid, reset buy grid
-    function postInteraction(Order memory order, bytes memory extension, bytes32 orderHash, address taker, uint256 makingAmount, uint256 takingAmount, uint256 remainingMakingAmount, bytes memory extraData) external {
-    
-    }
+    function postInteraction(
+        Order memory order,
+        bytes memory extension,
+        bytes32 orderHash,
+        address taker,
+        uint256 makingAmount,
+        uint256 takingAmount,
+        uint256 remainingMakingAmount,
+        bytes memory extraData
+    ) external {}
 
     function setUpGrids(GridLine[] memory _buys, GridLine[] memory _sells) external onlyOwner {
         // Clean up existing grids
@@ -75,7 +85,6 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
         for (uint256 i = 0; i < _sells.length; i++) {
             sellTargets.push(_sells[i]);
         }
-
     }
 
     function getBuyAmount() public view returns (uint256) {
@@ -89,7 +98,7 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
         uint256 buyAmount = getBuyAmount();
 
         if (buyAmount == 0) return 0;
-        return buyAmount * buyTargets[buyGrid].price;
+        return buyAmount / buyTargets[buyGrid].price;
     }
 
     function getSellAmount() public view returns (uint256) {
@@ -99,12 +108,10 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
         return asset2.balanceOf(address(this)).mulDiv(sellTargets[sellGrid].portion, 10000);
     }
 
-function getSellReceiveAmount() public view returns (uint256) {
+    function getSellReceiveAmount() public view returns (uint256) {
         uint256 sellAmount = getSellAmount();
 
         if (sellAmount == 0) return 0;
         return sellAmount * sellTargets[sellGrid].price;
     }
-
-
 }
