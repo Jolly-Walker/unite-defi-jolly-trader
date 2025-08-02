@@ -10,15 +10,23 @@ import {IGridTrader} from "./Interfaces/IGridTrader.sol";
 
 contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
 
-    IERC20 asset2;
-    address chainlinkAddress; // price feed address for asset/asset2 pair
+    IERC20 public asset2;
+    address public chainlinkAddress; // price feed address for asset/asset2 pair
+    address public oneInchLOP;
     
     GridLine[] public buyTargets;
     GridLine[] public sellTargets;
 
-    constructor(IERC20 asset, IERC20 _asset2, address _chainLinkAddress) Ownable(msg.sender) ERC20("Name", "Sym") ERC4626(asset) {
+    // index of grid to trade
+    uint256 public buyGrid;
+
+    // index of grid to trade
+    uint256 public sellGrid;
+
+    constructor(IERC20 asset, IERC20 _asset2, address _chainLinkAddress, address _oneInchLOP) Ownable(msg.sender) ERC20("Name", "Sym") ERC4626(asset) {
         asset2 = _asset2;
         chainlinkAddress = _chainLinkAddress;
+        oneInchLOP = _oneInchLOP;
     }
 
     // ERC1271: validate signatures
@@ -36,7 +44,11 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
         return IERC20(asset()).balanceOf(address(this)) + asset2Value;
     }
 
+    // if its a buy order, increment buy grid, reset sell grid
+    // if its a sell order, increment sell grid, reset buy grid
     function postInteraction(Order memory order, bytes memory extension, bytes32 orderHash, address taker, uint256 makingAmount, uint256 takingAmount, uint256 remainingMakingAmount, bytes memory extraData) external {
 
     }
+
+
 }
