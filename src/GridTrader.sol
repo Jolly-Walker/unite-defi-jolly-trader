@@ -18,6 +18,7 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
     address public chainlinkAddress; // price feed address for asset/asset2 pair
     address public oneInchLOP;
 
+    mapping(bytes32 => bool) public usedHashes;
     GridLine[] public buyTargets;
     GridLine[] public sellTargets;
 
@@ -26,6 +27,8 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
 
     // index of grid to trade
     uint256 public sellGrid;
+
+    event GridAdvanced(bytes32 indexed orderHash, bool isBuy, uint256 buyGrid, uint256 sellGrid);
 
     constructor(IERC20 asset, IERC20 _asset2, address _chainLinkAddress, address _oneInchLOP)
         Ownable(msg.sender)
@@ -39,11 +42,11 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
 
     // ERC1271: validate signatures
     function isValidSignature(bytes32 hash, bytes memory signature) public view override returns (bytes4) {
-        address signer = ECDSA.recover(hash, signature);
-        if (signer == owner()) {
-            return 0x1626ba7e; // ERC1271 magic value for valid signature
+        if (usedHashes[hash]) return 0xffffffff;
+        if (ECDSA.recover(hash, signature) == owner()) {
+            return 0x1626ba7e;
         }
-        return 0xffffffff; // invalid
+        return 0xffffffff;
     }
 
     function totalAssets() public view override returns (uint256) {
@@ -60,15 +63,31 @@ contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
     // if its a buy order, increment buy grid, reset sell grid
     // if its a sell order, increment sell grid, reset buy grid
     function postInteraction(
-        Order memory order,
-        bytes memory extension,
+        Order calldata order,
+        bytes calldata extension,
         bytes32 orderHash,
         address taker,
         uint256 makingAmount,
         uint256 takingAmount,
         uint256 remainingMakingAmount,
-        bytes memory extraData
-    ) external {}
+        bytes calldata extraData
+    ) external {
+        require(msg.sender == oneInchLOP, "Only 1inch LOP");
+        usedHashes[orderHash] = true;
+
+        // Determine whether it was a buy or sell
+        bool isBuy = order.makerAsset == address(asset());
+
+        if (isBuy) {
+            buyGrid++;
+            sellGrid = 0;
+        } else {
+            sellGrid++;
+            buyGrid = 0;
+        }
+
+        emit GridAdvanced(orderHash, isBuy, buyGrid, sellGrid);
+    }
 
     function setUpGrids(GridLine[] memory _buys, GridLine[] memory _sells) external onlyOwner {
         // Clean up existing grids
