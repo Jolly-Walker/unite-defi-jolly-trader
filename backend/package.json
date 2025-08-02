@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@1inch/limit-order-protocol-utils": "^4.0.1",
+    "ethers": "^6.15.0"
+  }
+}

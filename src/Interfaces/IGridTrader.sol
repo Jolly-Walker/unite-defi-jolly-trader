@@ -6,5 +6,6 @@ interface IGridTrader {
     struct GridLine {
         uint256 price;
         uint24 portion;
+        bool triggered;
     }
 }

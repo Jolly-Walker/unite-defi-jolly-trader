@@ -6,12 +6,15 @@ import {ERC4626, IERC20, ERC20} from "@openzeppelin/contracts/token/ERC20/extens
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ChainlinkOracleLib} from "./Library/ChainlinkOracleLib.sol";
+import {IGridTrader} from "./Interfaces/IGridTrader.sol";
 
-contract GridTrader is ERC4626, IERC1271, Ownable {
+contract GridTrader is ERC4626, IERC1271, Ownable, IGridTrader {
 
     IERC20 asset2;
     address chainlinkAddress; // price feed address for asset/asset2 pair
-
+    
+    GridLine[] public buyTargets;
+    GridLine[] public sellTargets;
 
     constructor(IERC20 asset, IERC20 _asset2, address _chainLinkAddress) Ownable(msg.sender) ERC20("Name", "Sym") ERC4626(asset) {
         asset2 = _asset2;
